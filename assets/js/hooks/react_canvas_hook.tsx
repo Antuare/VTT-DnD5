@@ -22,6 +22,10 @@ interface ChatMessage {
   message: string;
   is_system: boolean;
   timestamp: string | Date;
+  type?: 'message' | 'roll';
+  result?: number;
+  detail?: string;
+  content?: string;
 }
 
 interface TableChannel {
@@ -50,7 +54,7 @@ const ReactCanvasHook = {
     // Crear contenedor para React
     const reactRootDiv = document.createElement('div');
     reactRootDiv.id = 'react-root';
-    reactRootDiv.className = 'absolute inset-0 z-10 pointer-events-none';
+    reactRootDiv.className = 'absolute inset-0 z-10';
     canvasContainer.appendChild(reactRootDiv);
 
     // Inicializar PixiJS
@@ -65,9 +69,29 @@ const ReactCanvasHook = {
     const [diceResult, setDiceResult] = useState<string | null>(null);
     const [selectedTool, setSelectedTool] = useState<string>('select');
     const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
 
     // Canal de Phoenix para sincronización
     let tableChannel: TableChannel | null = null;
+
+    // Efecto de sonido sintetizado básico para clicks e interacciones de la UI
+    const playSound = (frequency = 1000, duration = 0.05) => {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+        gain.gain.setValueAtTime(0.02, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {
+        // AudioContext bloqueado por política del navegador
+      }
+    };
 
     useEffect(() => {
       // Conectar al canal de la mesa usando el slug
@@ -115,7 +139,26 @@ const ReactCanvasHook = {
         // Escuchar nuevos resultados de dados
         tableChannel.on("dice_rolled", (payload: { expression: string; result: string; user: string; timestamp: string }) => {
           console.log('[ReactCanvasHook] Dados tirados:', payload);
+          
+          // Parsear el resultado para obtener el valor numérico
+          const rollMatch = payload.result.match(/\[(\d+)\]/);
+          const rolledValue = rollMatch ? parseInt(rollMatch[1]) : Math.floor(Math.random() * 20) + 1;
+          
           setDiceResult(`${payload.user}: ${payload.result}`);
+          
+          // Agregar al historial de chat
+          setChatMessages(prev => [...prev, {
+            id: `roll-${Date.now()}`,
+            user: 'Sistema',
+            message: `Tirada de ${payload.expression.toUpperCase()}`,
+            is_system: true,
+            timestamp: new Date(),
+            type: 'roll',
+            result: rolledValue,
+            detail: `[${rolledValue}]`,
+            content: `Tirada de ${payload.expression.toUpperCase()}`
+          }]);
+          
           setTimeout(() => setDiceResult(null), 4000);
         });
 
@@ -162,6 +205,8 @@ const ReactCanvasHook = {
     };
 
     const rollDice = (diceExpression: string) => {
+      playSound(150, 0.2); // Sonido sordo imitando dado
+      
       if (tableChannel && isConnected) {
         console.log('[ReactCanvasHook] Tirando dados:', diceExpression);
         tableChannel.push("roll_dice", { expression: diceExpression })
@@ -169,11 +214,28 @@ const ReactCanvasHook = {
             console.error('[ReactCanvasHook] Error al tirar dados:', resp);
           });
       } else {
-        console.warn('[ReactCanvasHook] No se puede tirar dados, canal no conectado');
+        // Modo offline: simular tirada local
+        const diceSize = parseInt(diceExpression.replace('d', ''));
+        const rolledValue = Math.floor(Math.random() * diceSize) + 1;
+        const timestamp = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        
+        setChatMessages(prev => [...prev, {
+          id: `roll-${Date.now()}`,
+          user: 'Sistema',
+          message: `Tirada de ${diceExpression.toUpperCase()}`,
+          is_system: true,
+          timestamp: new Date(),
+          type: 'roll',
+          result: rolledValue,
+          detail: `[${rolledValue}]`,
+          content: `Tirada de ${diceExpression.toUpperCase()}`
+        }]);
       }
     };
 
     const sendChatMessage = (message: string) => {
+      playSound(800, 0.08);
+      
       if (tableChannel && isConnected) {
         console.log('[ReactCanvasHook] Enviando mensaje de chat:', message);
         tableChannel.push("chat_message", { message })
@@ -184,14 +246,28 @@ const ReactCanvasHook = {
             console.error('[ReactCanvasHook] Error al enviar mensaje:', resp);
           });
       } else {
-        console.warn('[ReactCanvasHook] No se puede enviar mensaje, canal no conectado');
+        // Modo offline: agregar mensaje local
+        const timestamp = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        setChatMessages(prev => [...prev, {
+          id: `msg-${Date.now()}`,
+          user: 'Jugador',
+          message: message,
+          is_system: false,
+          timestamp: new Date()
+        }]);
       }
     };
 
-    // Renderizar componentes de React
+    const toggleRightPanel = () => {
+      playSound(900);
+      setIsRightPanelOpen(!isRightPanelOpen);
+    };
+
+    // Renderizar componentes de React con el layout VTT Dark Engine completo
     root.render(
-      <div className="relative w-full h-full">
-        {/* Sidebar de herramientas - pointer-events-auto para permitir clicks */}
+      <div className="flex h-screen w-screen bg-vtt-black text-zinc-300 font-sans select-none overflow-hidden text-xs">
+        
+        {/* BARRA DE HERRAMIENTAS IZQUIERDA */}
         <div className="pointer-events-auto">
           <SidebarTools 
             selectedTool={selectedTool} 
@@ -201,14 +277,82 @@ const ReactCanvasHook = {
           />
         </div>
 
-        {/* Panel de chat */}
-        <div className="pointer-events-auto">
-          <ChatPanel 
-            messages={chatMessages} 
-            onSendMessage={sendChatMessage}
-            isConnected={isConnected}
-          />
+        {/* SECCIÓN CENTRAL: VISOR Y CONTROLES */}
+        <div className="flex-grow flex flex-col h-full bg-[#070708] relative z-10 overflow-hidden">
+          
+          {/* CABECERA / PANEL DE INICIATIVA */}
+          <div className="h-10 border-b border-vtt-border bg-vtt-panel flex items-center justify-between px-4 z-20">
+            <div className="flex items-center space-x-2 font-mono">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+              <span className="text-[10px] tracking-wider text-zinc-400 uppercase font-bold">MESA ACTUAL:</span>
+              <span className="text-[10px] text-vtt-gold font-bold">CALABOZO DE LAS SOMBRAS</span>
+            </div>
+            
+            {/* Marcador de iniciativa vacío / Minimalista */}
+            <div className="flex items-center space-x-2 bg-vtt-black/60 px-3 py-1 border border-vtt-border">
+              <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold font-mono">Turno Activo:</span>
+              <span className="font-mono text-zinc-400">Esperando Iniciativa...</span>
+            </div>
+
+            <button 
+              onClick={toggleRightPanel}
+              className="text-zinc-500 hover:text-zinc-200 border border-transparent hover:border-vtt-border px-2 py-0.5 transition-colors"
+              title="Alternar panel lateral"
+            >
+              <i className={`fa-solid ${isRightPanelOpen ? 'fa-angles-right' : 'fa-angles-left'}`}></i>
+            </button>
+          </div>
+
+          {/* CONTENEDOR PARA EL CANVAS (Aquí se monta PixiJS) */}
+          <div className="flex-grow relative w-full h-full flex items-center justify-center">
+            {/* Rejilla de fondo estética simulada solo para renderizado visual */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
+              backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
+              backgroundSize: '24px 24px'
+            }}></div>
+
+            <div className="text-center z-10 border border-vtt-border bg-vtt-panel p-6 max-w-sm w-full font-mono hud-corner">
+              <i className="fa-solid fa-shapes text-3xl text-vtt-gold mb-3 block animate-pulse"></i>
+              <h3 className="font-epic text-xs text-zinc-200 tracking-widest uppercase mb-1">Visor de PixiJS</h3>
+              <p className="text-[10px] text-zinc-500 leading-relaxed uppercase">
+                Este contenedor recibirá el canvas dinámico renderizado por tu script de TypeScript.
+              </p>
+            </div>
+          </div>
+
+          {/* ACCESO RÁPIDO DE DADOS (HOTBAR INFERIOR) */}
+          <div className="h-12 border-t border-vtt-border bg-vtt-panel flex items-center px-4 justify-between z-20">
+            <div className="flex items-center space-x-2">
+              <span className="text-[9px] font-mono tracking-wider text-zinc-500 uppercase font-bold mr-1">Tirar:</span>
+              {['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(die => (
+                <button 
+                  key={die}
+                  onClick={() => rollDice(die)}
+                  className="w-8 h-7 bg-vtt-black hover:bg-vtt-surface border border-vtt-border hover:border-vtt-gold text-vtt-gold text-[10px] font-mono font-bold transition-all active:scale-95 flex items-center justify-center uppercase"
+                >
+                  {die}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center space-x-1">
+              <span className="text-[9px] font-mono text-zinc-600 uppercase">Acento de interfaz</span>
+              <div className="w-1.5 h-1.5 bg-vtt-gold"></div>
+            </div>
+          </div>
         </div>
+
+        {/* PANEL LATERAL DERECHO (HOJA DE PERSONAJE + CHAT) */}
+        {isRightPanelOpen && (
+          <div className="pointer-events-auto">
+            <ChatPanel 
+              messages={chatMessages} 
+              onSendMessage={sendChatMessage}
+              onRollDice={rollDice}
+              isConnected={isConnected}
+            />
+          </div>
+        )}
 
         {/* Overlay de dados */}
         {diceResult && (
@@ -219,7 +363,7 @@ const ReactCanvasHook = {
         
         {/* Indicador de conexión */}
         {!isConnected && (
-          <div className="absolute top-4 right-4 pointer-events-auto bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+          <div className="absolute top-14 right-4 pointer-events-auto bg-vtt-danger text-white px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
             🔴 Conectando...
           </div>
         )}

@@ -1,25 +1,24 @@
 import React from 'react';
-import { DiceRoll } from 'rpg-dice-roller';
 
 interface DiceOverlayProps {
   result: string;
 }
 
 const DiceOverlay: React.FC<DiceOverlayProps> = ({ result }) => {
-  // Parsear el resultado para mostrar de forma atractiva
+  // Parsear el resultado para mostrar de forma atractiva (estilo minimalista VTT Dark Engine)
   const parseResult = (resultStr: string) => {
     try {
-      const roll = new DiceRoll(resultStr);
+      // Formato simple: extraer el total si existe
+      const match = resultStr.match(/(\d+)/);
+      const total = match ? match[1] : '?';
       return {
-        expression: roll.expression,
-        total: roll.total,
-        rolls: roll.rolls
+        expression: resultStr,
+        total: total
       };
     } catch (e) {
       return {
         expression: resultStr,
-        total: '?',
-        rolls: []
+        total: '?'
       };
     }
   };
@@ -27,29 +26,16 @@ const DiceOverlay: React.FC<DiceOverlayProps> = ({ result }) => {
   const parsed = parseResult(result);
 
   return (
-    <div className="dice-overlay fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-gray-900 border-2 border-accent-color rounded-xl p-8 shadow-2xl transform animate-bounce-in">
-        <div className="text-center space-y-4">
-          <div className="text-2xl font-bold text-accent-color">
+    <div className="dice-overlay fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+      <div className="bg-vtt-panel border-2 border-vtt-gold rounded-xl p-6 shadow-2xl transform animate-bounce-in hud-corner">
+        <div className="text-center space-y-3">
+          <div className="text-lg font-bold text-vtt-gold font-mono">
             {parsed.expression}
           </div>
           
-          <div className="text-6xl font-black text-white">
+          <div className="text-5xl font-black text-white font-epic">
             {parsed.total}
           </div>
-
-          {parsed.rolls && parsed.rolls.length > 0 && (
-            <div className="flex gap-2 justify-center flex-wrap">
-              {parsed.rolls.map((roll: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center text-lg font-bold"
-                >
-                  {roll.value || roll}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
