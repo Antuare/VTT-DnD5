@@ -4,6 +4,7 @@ import { initializePixiApp, destroyPixiApp } from '../canvas/engine';
 import ChatPanel from '../components/ChatPanel';
 import SidebarTools from '../components/SidebarTools';
 import DiceOverlay from '../components/DiceOverlay';
+import CharacterSheet from '../components/CharacterSheet';
 
 interface TokenData {
   id: string;
@@ -70,6 +71,7 @@ const ReactCanvasHook = {
     const [selectedTool, setSelectedTool] = useState<string>('select');
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
+    const [isCharacterSheetOpen, setIsCharacterSheetOpen] = useState<boolean>(false);
 
     // Canal de Phoenix para sincronización
     let tableChannel: TableChannel | null = null;
@@ -263,6 +265,16 @@ const ReactCanvasHook = {
       setIsRightPanelOpen(!isRightPanelOpen);
     };
 
+    const toggleCharacterSheet = () => {
+      playSound(1200);
+      setIsCharacterSheetOpen(!isCharacterSheetOpen);
+    };
+
+    const handleRollFromSheet = (expression: string, modifier?: number) => {
+      // Reutilizar la función rollDice existente
+      rollDice(expression);
+    };
+
     // Renderizar componentes de React con el layout VTT Dark Engine completo
     root.render(
       <div className="flex h-screen w-screen bg-vtt-black text-zinc-300 font-sans select-none overflow-hidden text-xs">
@@ -351,6 +363,26 @@ const ReactCanvasHook = {
               onRollDice={rollDice}
               isConnected={isConnected}
             />
+          </div>
+        )}
+
+        {/* BOTÓN FLOTANTE PARA ABRIR HOJA DE PERSONAJE */}
+        <button
+          onClick={toggleCharacterSheet}
+          className="fixed bottom-4 left-4 z-40 w-12 h-12 bg-gradient-to-b from-[#120f0e] to-[#070606] border-2 border-amber-500/30 rounded-xl shadow-2xl flex items-center justify-center hover:border-amber-500/60 transition-all active:scale-95"
+          title="Abrir Hoja de Personaje"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+          </svg>
+        </button>
+
+        {/* HOJA DE PERSONAJE (MODAL FLOTANTE) */}
+        {isCharacterSheetOpen && (
+          <div className="fixed inset-0 z-50 overflow-auto bg-black/80 backdrop-blur-sm" onClick={toggleCharacterSheet}>
+            <div className="min-h-screen py-8 px-4" onClick={e => e.stopPropagation()}>
+              <CharacterSheet onRollDice={handleRollFromSheet} />
+            </div>
           </div>
         )}
 
