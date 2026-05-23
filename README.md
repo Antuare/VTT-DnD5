@@ -1,249 +1,265 @@
-<img src="https://github.com/elixir-lang/elixir-lang.github.com/raw/main/images/logo/logo.png#gh-light-mode-only" width="200" alt="Elixir">
-<img src="https://github.com/elixir-lang/elixir-lang.github.com/raw/main/images/logo/logo-dark.png#gh-dark-mode-only" width="200" alt="Elixir">
+# MyVtt - Virtual Table Top para DnD 5e
 
-[![CI](https://github.com/elixir-lang/elixir/workflows/CI/badge.svg?branch=main)](https://github.com/elixir-lang/elixir/actions?query=branch%3Amain+workflow%3ACI)
+<div align="center">
 
-Elixir is a dynamic, functional language designed for building scalable
-and maintainable applications.
+![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![Elixir](https://img.shields.io/badge/elixir-~%3E%201.14-blueviolet)
+![Phoenix](https://img.shields.io/badge/phoenix-~%3E%201.7.10-green)
+![License](https://img.shields.io/badge/license-Apache%202.0-red)
 
-For more about Elixir, installation and documentation,
-[check Elixir's website](https://elixir-lang.org/).
+</div>
 
-## Policies
+## Descripción
 
-New releases are announced in the [announcement mailing list][8].
-You can subscribe by sending an email to elixir-lang-ann+subscribe@googlegroups.com
-and replying to the confirmation email.
+MyVtt es una plataforma de tabla virtual (VTT) diseñada específicamente para jugar Dungeons & Dragons 5ta Edición. Construida con **Phoenix Framework** y **Elixir**, ofrece una experiencia de juego en tiempo real con soporte multijugador.
 
-All security releases [will be tagged with `[security]`][10]. For more
-information, please read our [Security Policy][9].
+## ✨ Características Principales
 
-All interactions in our official communication channels follow our
-[Code of Conduct][1].
+### Backend (Phoenix/Elixir)
+- 🎲 **Sistema de dados integrado** - Soporte completo para tiradas de dados DnD 5e
+- 💬 **Chat en tiempo real** - Comunicación instantánea entre jugadores
+- 👤 **Gestión de cuentas** - Autenticación segura con bcrypt
+- 📊 **Fichas de personaje** - Sistema completo de gestión de personajes
+- ⚔️ **Combate** - Tracker de combate y gestión de iniciativas
+- 🔌 **Phoenix Channels** - Comunicación en tiempo real para multijugador
+- 💾 **SQLite3** - Base de datos ligera y portable
 
-## Bug reports
+### Frontend (React + TypeScript)
+- 🎨 **Interfaz moderna** - Diseño responsive con Tailwind CSS
+- 🎮 **Estilo HUD** - Interfaz oscura estilo videojuego
+- 🎯 **Canvas interactivo** - Renderizado 2D con PixiJS
+- 📱 **Responsive** - Adaptable a diferentes dispositivos
+- 🔔 **Notificaciones visuales** - Feedback inmediato de acciones
 
-For reporting bugs, [visit our issue tracker][2] and follow the steps
-for reporting a new issue. **Please disclose security vulnerabilities
-privately at elixir-security@googlegroups.com**.
+## 🏗️ Arquitectura del Proyecto
 
-## Issues tracker management
-
-All currently open bugs related to the Elixir repository are listed
-in the issues tracker. The Elixir team uses the issues tracker to focus
-on *actionable items*, including planned enhancements in the short- and
-medium-term. We also do our best to label entries for clarity and to ease
-collaboration.
-
-Our *actionable item policy* has some important consequences, such as:
-
-  * Proposing new features as well as request for support, help, and
-    guidance must be done in their own spaces, detailed next.
-
-  * Issues where we have identified to be outside of Elixir scope,
-    such as a bug upstream, will be closed (and requested to be moved
-    elsewhere if appropriate).
-
-  * We actively close unrelated and non-actionable issues to keep the
-    issues tracker tidy. However, we may get things wrong from time to
-    time, so we are glad to revisit issues and reopen if necessary.
-
-Keep the tone positive and be kind! For more information, see the
-[Code of Conduct][1].
-
-### Proposing new features
-
-For proposing new features, please start a discussion in the
-[Elixir Core mailing list][3]. The [language development history and
-its focus are described on our website](https://elixir-lang.org/development.html).
-
-Keep in mind that it is your responsibility to argue and explain
-why a feature is useful and how it will impact the codebase and
-the community. A good proposal includes the problem description
-and how the proposed solution compares with existing alternatives
-in the Elixir ecosystem (as well as in other languages). To iron
-out a proposal before submission, consider using and gathering
-feedback from the community spaces [listed on the sidebar of the
-Elixir website](https://elixir-lang.org/).
-
-Once a proposal is accepted, it will be added to [the issue tracker][2].
-Features and bug fixes that have already been merged and will be included
-in the next release are then "closed" and added to the [changelog][7].
-
-### Discussions, support, and help
-
-For general discussions, support, and help, please use many of the community
-spaces [listed on the sidebar of the Elixir website](https://elixir-lang.org/),
-such as forums, chat platforms, etc, where the wider community will be available
-to help you.
-
-## Compiling from source
-
-For the many different ways to install Elixir,
-[see our installation instructions on the website](https://elixir-lang.org/install.html).
-However, if you want to contribute to Elixir, you will need to compile from source.
-
-First, [install Erlang](https://elixir-lang.org/install.html#installing-erlang).
-After that, clone this repository to your machine, compile and test it:
-
-```sh
-git clone https://github.com/elixir-lang/elixir.git
-cd elixir
-make clean test
+```
+my_vtt/
+├── lib/
+│   ├── my_vtt/           # Lógica de negocio principal
+│   │   ├── accounts/     # Gestión de usuarios y autenticación
+│   │   ├── tables/       # Gestión de mesas de juego
+│   │   ├── game_state.ex # Estado del juego
+│   │   └── health_monitor.ex # Monitor de salud del sistema
+│   └── my_vtt_web/       # Capa web Phoenix
+│       ├── channels/     # Phoenix Channels para tiempo real
+│       ├── components/   # Componentes LiveView
+│       ├── live/         # Módulos LiveView
+│       ├── auth.ex       # Autenticación web
+│       └── router.ex     # Enrutamiento
+├── assets/               # Frontend principal (TypeScript/React)
+│   ├── js/
+│   │   ├── components/   # Componentes React
+│   │   │   ├── CharacterSheet.tsx
+│   │   │   ├── ChatPanel.tsx
+│   │   │   ├── DiceOverlay.tsx
+│   │   │   └── SidebarTools.tsx
+│   │   ├── canvas/       # Lógica del canvas PixiJS
+│   │   └── hooks/        # Custom React hooks
+│   └── css/              # Estilos Tailwind CSS
+├── vtt-dark-engine/      # Motor gráfico alternativo (React/Vite)
+│   └── src/
+│       └── components/   # Componentes UI del motor
+├── config/               # Configuración por entorno
+├── priv/
+│   ├── repo/             # Migraciones y seeds de Ecto
+│   └── static/           # Assets estáticos compilados
+└── test/                 # Pruebas ExUnit
 ```
 
-> Note: if you are running on Windows,
-[this article includes important notes for compiling Elixir from source
-on Windows](https://github.com/elixir-lang/elixir/wiki/Windows).
+## 🚀 Instalación Rápida
 
-In case you want to use this Elixir version as your system version,
-you need to add the `bin` directory to [your PATH environment variable](https://elixir-lang.org/install.html#setting-path-environment-variable).
+### Prerrequisitos
 
-If Elixir fails to build (specifically when pulling in a new version via
-`git`), be sure to remove any previous build artifacts by running
-`make clean`, then `make test`.
+- **Elixir** ~> 1.14
+- **Erlang/OTP** >= 24.0
+- **Node.js** (última versión LTS)
+- **npm** o **yarn**
 
-## Contributing
+### Pasos de Instalación
 
-We welcome everyone to contribute to Elixir. To do so, there are a few
-things you need to know about the code. First, Elixir code is divided
-in applications inside the `lib` folder:
-
-* `elixir` - Elixir's kernel and standard library
-
-* `eex` - EEx is the template engine that allows you to embed Elixir
-
-* `ex_unit` - ExUnit is a simple test framework that ships with Elixir
-
-* `iex` - IEx stands for Interactive Elixir: Elixir's interactive shell
-
-* `logger` - Logger is the built-in logger
-
-* `mix` - Mix is Elixir's build tool
-
-You can run all tests in the root directory with `make test` and you can
-also run tests for a specific framework `make test_#{APPLICATION}`, for example,
-`make test_ex_unit`. If you just changed something in Elixir's standard
-library, you can run only that portion through `make test_stdlib`.
-
-If you are changing just one file, you can choose to compile and run tests only
-for that particular file for fast development cycles. For example, if you
-are changing the String module, you can compile it and run its tests as:
-
-```sh
-bin/elixirc lib/elixir/lib/string.ex -o lib/elixir/ebin
-bin/elixir lib/elixir/test/elixir/string_test.exs
+1. **Clonar el repositorio**
+```bash
+git clone <repository-url>
+cd my_vtt
 ```
 
-You can also use the `LINE` env var to run a single test:
-
-```sh
-LINE=123 bin/elixir lib/elixir/test/elixir/string_test.exs
-````
-
-To recompile (including Erlang modules):
-
-```sh
-make compile
+2. **Instalar dependencias de Elixir**
+```bash
+mix deps.get
 ```
 
-After your changes are done, please remember to run `make format` to guarantee
-all files are properly formatted and then run the full suite with
-`make test`.
-
-If your contribution fails during the bootstrapping of the language,
-you can rebuild the language from scratch with:
-
-```sh
-make clean_elixir compile
+3. **Instalar dependencias de Node.js**
+```bash
+cd assets && npm install && cd ..
 ```
 
-Similarly, if you can't get Elixir to compile or the tests to pass after
-updating an existing checkout, run `make clean compile`. You can check
-[the official build status](https://github.com/elixir-lang/elixir/actions/workflows/ci.yml).
-More tasks can be found by reading the [Makefile](Makefile).
-
-With tests running and passing, you are ready to contribute to Elixir and
-[send a pull request](https://help.github.com/articles/using-pull-requests/).
-We have saved some excellent pull requests we have received in the past in
-case you are looking for some examples:
-
-* [Implement Enum.member? - Pull request](https://github.com/elixir-lang/elixir/pull/992)
-* [Add String.valid? - Pull request](https://github.com/elixir-lang/elixir/pull/1058)
-* [Implement capture_io for ExUnit - Pull request](https://github.com/elixir-lang/elixir/pull/1059)
-
-### Reviewing changes
-
-Once a pull request is sent, the Elixir team will review your changes.
-We outline our process below to clarify the roles of everyone involved.
-
-All pull requests must be approved by two committers before being merged into
-the repository. If any changes are necessary, the team will leave appropriate
-comments requesting changes to the code. Unfortunately, we cannot guarantee a
-pull request will be merged, even when modifications are requested, as the Elixir
-team will re-evaluate the contribution as it changes.
-
-Committers may also push style changes directly to your branch. If you would
-rather manage all changes yourself, you can disable the "Allow edits from maintainers"
-feature when submitting your pull request.
-
-The Elixir team may optionally assign someone to review a pull request.
-If someone is assigned, they must explicitly approve the code before
-another team member can merge it.
-
-When the review finishes, your pull request will be squashed and merged
-into the repository. If you have carefully organized your commits and
-believe they should be merged without squashing, please mention it in
-a comment.
-
-## Building documentation
-
-Building the documentation requires [ExDoc](https://github.com/elixir-lang/ex_doc)
-to be installed and built alongside Elixir:
-
-```sh
-# After cloning and compiling Elixir, in its parent directory:
-git clone https://github.com/elixir-lang/ex_doc.git
-cd ex_doc && ../elixir/bin/mix do deps.get + compile
+4. **Configurar la base de datos**
+```bash
+mix ecto.create
+mix ecto.migrate
+mix run priv/repo/seeds.exs  # Opcional: datos de ejemplo
 ```
 
-Now go back to Elixir's root directory and run:
-
-```sh
-make docs                  # to generate HTML pages
-make docs DOCS_FORMAT=epub # to generate EPUB documents
+5. **Compilar assets**
+```bash
+mix assets.setup
+mix assets.build
 ```
 
-This will produce documentation sets for `elixir`, `eex`, `ex_unit`, `iex`, `logger`,
-and `mix` under the `doc` directory. If you are planning to contribute documentation,
-[please check our best practices for writing documentation](https://hexdocs.pm/elixir/writing-documentation.html).
+6. **Iniciar el servidor**
+```bash
+mix phx.server
+```
 
-## Development links
+Visita `http://localhost:4000` en tu navegador.
 
-  * [Elixir Documentation][6]
-  * [Elixir Core Mailing list (development)][3]
-  * [Announcement mailing list][8]
-  * [Code of Conduct][1]
-  * [Issue tracker][2]
-  * [Changelog][7]
-  * [Security Policy][9]
-  * **[#elixir][4]** on [Libera.Chat][5] IRC
+## 🛠️ Comandos Mix Útiles
 
-  [1]: CODE_OF_CONDUCT.md
-  [2]: https://github.com/elixir-lang/elixir/issues
-  [3]: https://groups.google.com/group/elixir-lang-core
-  [4]: https://web.libera.chat/#elixir
-  [5]: https://libera.chat
-  [6]: https://elixir-lang.org/docs.html
-  [7]: CHANGELOG.md
-  [8]: https://groups.google.com/group/elixir-lang-ann
-  [9]: SECURITY.md
-  [10]: https://groups.google.com/forum/#!searchin/elixir-lang-ann/%5Bsecurity%5D%7Csort:date
+```bash
+# Instalación completa desde cero
+mix setup
 
-## License
+# Reiniciar base de datos
+mix ecto.reset
 
-"Elixir" and the Elixir logo are registered trademarks of The Elixir Team.
+# Ejecutar pruebas
+mix test
 
-Elixir source code is released under Apache License 2.0.
+# Compilar assets en producción
+mix assets.deploy
 
-Check [NOTICE](NOTICE) and [LICENSE](LICENSE) files for more information.
+# Crear release con Burrito
+mix release
+```
+
+## 🎮 Uso del Script de Inicio
+
+El proyecto incluye un script de inicio interactivo:
+
+```bash
+./Start.sh
+```
+
+Opciones disponibles:
+1. **Instalación completa** - Dependencias + DB + assets + servidor
+2. **Solo dependencias** - Instala deps de Elixir y Node.js
+3. **Configurar BD** - Crea y migra la base de datos
+4. **Compilar assets** - Build del frontend
+5. **Iniciar servidor** - Solo arranca Phoenix
+6. **Diagnóstico** - Verifica el estado del sistema
+
+Para instalación automática sin interacción:
+```bash
+./Start.sh --auto
+```
+
+## 🧪 Ejecutar Tests
+
+```bash
+# Todos los tests
+mix test
+
+# Tests específicos
+mix test test/my_vtt/accounts_test.exs
+mix test test/my_vtt_web/live/
+
+# Con cobertura
+mix test --cover
+```
+
+## 📦 Producción
+
+### Variables de Entorno
+
+```bash
+export DATABASE_URL="sqlite3:///path/to/prod.db"
+export SECRET_KEY_BASE="<generar-con-mix-phx.gen.secret>"
+export PHX_HOST="tudominio.com"
+```
+
+### Build de Producción
+
+```bash
+MIX_ENV=prod mix do deps.get, assets.deploy, release
+```
+
+### Docker
+
+```bash
+docker build -t my_vtt .
+docker run -p 4000:4000 my_vtt
+```
+
+## 🔧 Configuración
+
+### Archivos de Configuración
+
+- `config/config.exs` - Configuración base
+- `config/dev.exs` - Desarrollo (con recarga en vivo)
+- `config/test.exs` - Testing
+- `config/prod.exs` - Producción
+
+### Personalización
+
+Editar `config/config.exs` para:
+- Cambiar puerto del servidor
+- Configurar adaptadores de base de datos
+- Ajustar niveles de logging
+- Configurar gettext para internacionalización
+
+## 🎨 Frontend
+
+### assets/ (Principal)
+
+Usa TypeScript, React, PixiJS y Tailwind CSS:
+
+```bash
+cd assets
+npm run build      # Compilar
+npm run watch      # Modo desarrollo
+```
+
+### vtt-dark-engine/ (Alternativo)
+
+Motor gráfico con Vite y React puro:
+
+```bash
+cd vtt-dark-engine
+npm run dev        # Servidor de desarrollo
+npm run build      # Build de producción
+```
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -am 'Añadir nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la licencia Apache 2.0 - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 🙏 Créditos
+
+- **Framework**: [Phoenix Framework](https://phoenixframework.org/)
+- **Lenguaje**: [Elixir](https://elixir-lang.org/)
+- **Frontend**: React, TypeScript, PixiJS, Tailwind CSS
+- **Dados**: [@dice-roller/rpg-dice-roller](https://github.com/dice-roller/rpg-dice-roller)
+- **Animaciones**: [GSAP](https://greensock.com/gsap/)
+
+## 📞 Soporte y Comunidad
+
+- **Issues**: Reporta bugs en el tracker de GitHub
+- **Discusiones**: Para preguntas y propuestas de características
+- **Documentación**: `mix docs` para generar documentación local
+
+---
+
+<div align="center">
+
+**¡Que comience la aventura! 🐉🎲**
+
+</div>
