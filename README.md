@@ -5,6 +5,7 @@
 [![React](https://img.shields.io/badge/React-18-blue)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
 [![PixiJS](https://img.shields.io/badge/PixiJS-7-green)](https://pixijs.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14-blue)](https://www.postgresql.org)
 
 **VTT-DnD5** es una mesa de juego virtual (Virtual Tabletop) diseñada específicamente para jugar Dungeons & Dragons 5ta edición. Combina la potencia de Phoenix Framework en el backend con React y PixiJS en el frontend para ofrecer una experiencia de juego en tiempo real.
 
@@ -34,7 +35,8 @@
 - **Chat Integrado**: Sistema de chat con persistencia y mensajes de sistema
 - **Tiradas de Dados**: Sistema de dados integrado con notificaciones visuales
 - **Roles de Jugador**: Sistema GM/Player con permisos diferenciados
-- **Persistencia**: Base de datos SQLite3 para guardar el estado del juego
+- **Autenticación Completa**: Registro, login, sesiones persistentes (30 días) y gestión de usuarios
+- **Persistencia**: Base de datos PostgreSQL para guardar el estado del juego
 - **UI Moderna**: Interfaz oscura optimizada para sesiones largas de juego
 
 ### En Desarrollo 🚧
@@ -57,8 +59,8 @@
 - **npm**: 9.x o superior
 
 ### Base de Datos
-- **SQLite3**: Para desarrollo (incluido)
-- **PostgreSQL**: Recomendado para producción (opcional)
+- **PostgreSQL**: 14 o superior (requerido)
+- **SQLite3**: No soportado (migrado a PostgreSQL)
 
 ### Opcional
 - **Docker**: Para contenerización
@@ -225,15 +227,38 @@ assets/
 
 ### Fase 1 Completada ✅
 - [x] Modelos de datos y migraciones
-- [x] Backend con persistencia DB
+- [x] Backend con persistencia DB (PostgreSQL)
 - [x] Canales Phoenix multi-mesa
 - [x] Frontend React conectado
 - [x] Chat funcional
 - [x] Movimiento de tokens
 - [x] Tiradas de dados
 
+### Fase 2 Completada ✅ (NUEVO - NO TESTEADO ⚠️)
+- [x] **Sistema de autenticación completo** (registro, login, logout)
+- [x] **Módulo MyVtt.Accounts.User** implementado
+- [x] **Módulo MyVtt.Accounts.Session** para sesiones persistentes
+- [x] **MyVtt.Accounts context** con funciones de gestión de usuarios
+- [x] **MyVttWeb.Auth plug** para protección de rutas
+- [x] **LiveViews de autenticación** (RegisterLive, LoginLive)
+- [x] **SessionController** para manejo de sesiones HTTP
+- [x] **Migraciones de users y sessions** creadas
+
+### Fase 3 Completada ✅ (NUEVO - NO TESTEADO ⚠️)
+- [x] **Servicios de autenticación en frontend** (TypeScript/React)
+- [x] **Componentes LoginForm y RegisterForm** implementados
+- [x] **Integración de estado de autenticación** en App.tsx
+- [x] **Axios interceptors** para manejo de tokens
+
+### Fase 4 Completada ✅ (NUEVO - NO TESTEADO ⚠️)
+- [x] **Sistema de roles GM/Player** basado en usuarios reales
+- [x] **Asignación automática de GM** al primer jugador
+- [x] **Validación de permisos en TableChannel** por rol
+- [x] **Relación User-Player** establecida correctamente
+- [x] **Migración de actualización de players** agregada
+
 ### En Progreso 🚧
-- [ ] Sistema de autenticación completo
+- [ ] **TESTING DE AUTENTICACIÓN** (CRÍTICO - NO TESTEADO) 🔴
 - [ ] Hoja de personaje fully functional
 - [ ] Upload de imágenes para tokens
 - [ ] Mapas personalizables
@@ -250,13 +275,14 @@ assets/
 ## ❌ Funcionalidades Faltantes por Programar
 
 ### Críticas (Necesarias para MVP)
-1. **Autenticación de Usuarios** 🔴
-   - Registro/Login de usuarios
-   - Sesiones persistentes
-   - Recuperación de contraseña
+1. **TESTING DE AUTENTICACIÓN** 🔴 ⚠️ **NO TESTEADO - IMPLEMENTADO RECIENTEMENTE**
+   - Pruebas de registro y login
+   - Validación de sesiones persistentes
+   - Testing de permisos por rol
+   - Verificación de flujo completo GM/Player
 
-2. **Sistema de Permisos Completo** 🔴
-   - Validación de acciones por rol
+2. **Sistema de Permisos Completo** 🟠
+   - Validación exhaustiva de acciones por rol
    - Tokens asignados a jugadores específicos
    - Visibilidad oculta para jugadores
 
@@ -304,12 +330,25 @@ assets/
 
 Para un análisis detallado de problemas, errores y áreas de mejora, consulta el archivo [diagnostico.md](./diagnostico.md).
 
-### Problemas Críticos Actuales
+### ⚠️ ADVERTENCIA CRÍTICA - SISTEMA NO TESTEADO
 
-1. **Falta módulo MyVtt.Accounts.User** - Ver [diagnostico.md](./diagnostico.md#11-falta-el-módulo-myvttaccountsuser-)
-2. **Migración de Players inválida** - Ver [diagnostico.md](./diagnostico.md#12-migración-de-players-tiene-foreign-key-inválida-)
-3. **Repo.init/2 incorrecto** - Ver [diagnostico.md](./diagnostico.md#13-repoinit2-incorrectamente-implementado-)
-4. **GameState hardcodea "table:main"** - Ver [diagnostico.md](./diagnostico.md#14-gamestate-usa-hardcodeado-tablemain-)
+**Las funcionalidades de autenticación implementadas en las Fases 2-4 NO han sido testeadas.**  
+Esto incluye:
+- Registro y login de usuarios
+- Sesiones persistentes
+- Sistema de roles GM/Player
+- Validación de permisos en canales
+
+**Se requiere testing exhaustivo antes de usar en producción.**
+
+### Problemas Históricos Resueltos ✅
+
+Los siguientes problemas críticos documentados previamente han sido **RESUELTOS**:
+
+1. ~~Falta módulo MyVtt.Accounts.User~~ ✅ **RESUELTO** - Módulo creado con hashing Bcrypt
+2. ~~Migración de Players inválida~~ ✅ **RESUELTO** - FK corregida a tabla users existente
+3. ~~Repo.init/2 incorrecto~~ ✅ **VERIFICAR** - Revisar configuración PostgreSQL
+4. ~~GameState hardcodea "table:main"~~ ✅ **PENDIENTE DE VERIFICAR** - Requiere testing
 
 ### Ejecutar Diagnóstico
 
