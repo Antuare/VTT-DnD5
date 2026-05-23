@@ -16,7 +16,7 @@ const SidebarTools: React.FC<SidebarToolsProps> = ({
   // Efecto de sonido sintetizado básico para clicks e interacciones de la UI
   const playSound = (frequency = 1000, duration = 0.05) => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
