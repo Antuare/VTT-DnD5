@@ -1,0 +1,23 @@
+{
+  "name": "my_vtt_assets",
+  "version": "1.0.0",
+  "description": "My VTT Frontend Assets",
+  "private": true,
+  "scripts": {
+    "build": "tsc && esbuild app.ts --bundle --outfile=../priv/static/assets/app.js --minify",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "pixi.js": "^7.3.2",
+    "gsap": "^3.12.2",
+    "rpg-dice-roller": "^5.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "typescript": "^5.2.2",
+    "esbuild": "^0.19.2"
+  }
+}
