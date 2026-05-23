@@ -3,7 +3,7 @@ import React from 'react';
 interface SidebarToolsProps {
   selectedTool: string;
   onToolChange: (tool: string) => void;
-  onRollDice: (expression: string) => void;
+  onRollDice: (dice: string) => void;
   isConnected?: boolean;
 }
 
@@ -13,76 +13,99 @@ const SidebarTools: React.FC<SidebarToolsProps> = ({
   onRollDice,
   isConnected = true
 }) => {
+  // Efecto de sonido sintetizado básico para clicks e interacciones de la UI
+  const playSound = (frequency = 1000, duration = 0.05) => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+      gain.gain.setValueAtTime(0.02, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch (e) {
+      // AudioContext bloqueado por política del navegador
+    }
+  };
+
   const tools = [
-    { id: 'select', name: 'Seleccionar', icon: '👆' },
-    { id: 'move', name: 'Mover', icon: '✋' },
-    { id: 'draw', name: 'Dibujar', icon: '✏️' },
-    { id: 'measure', name: 'Medir', icon: '📏' },
+    { id: 'select', name: 'Puntero', icon: 'fa-arrow-pointer' },
+    { id: 'measure', name: 'Medir Distancia', icon: 'fa-ruler' },
+    { id: 'draw', name: 'Dibujar', icon: 'fa-pencil' },
+    { id: 'fog', name: 'Niebla de Guerra', icon: 'fa-eye-slash' },
   ];
 
-  const dicePresets = [
-    { label: 'D20', expression: '1d20' },
-    { label: 'D12', expression: '1d12' },
-    { label: 'D10', expression: '1d10' },
-    { label: 'D8', expression: '1d8' },
-    { label: 'D6', expression: '1d6' },
-    { label: 'D4', expression: '1d4' },
-  ];
+  const dicePresets = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];
 
   return (
-    <div className="sidebar-tools absolute left-0 top-0 h-full w-16 flex flex-col items-center py-4 space-y-4 bg-gray-900/90 border-r border-gray-700">
-      {/* Indicador de conexión */}
-      <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} 
-           title={isConnected ? 'Conectado' : 'Desconectado'}></div>
-      
-      {/* Herramientas */}
-      <div className="space-y-2">
-        {tools.map((tool) => (
-          <button
-            key={tool.id}
-            onClick={() => onToolChange(tool.id)}
-            disabled={!isConnected}
-            className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl transition-all ${
-              selectedTool === tool.id
-                ? 'bg-accent-color text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            } ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title={tool.name}
-          >
-            {tool.icon}
-          </button>
-        ))}
-      </div>
-
-      {/* Separador */}
-      <div className="w-10 h-px bg-gray-600"></div>
-
-      {/* Dados rápidos */}
-      <div className="space-y-2">
-        {dicePresets.map((die) => (
-          <button
-            key={die.label}
-            onClick={() => isConnected && onRollDice(die.expression)}
-            disabled={!isConnected}
-            className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 text-white hover:from-purple-500 hover:to-purple-700 flex items-center justify-center text-sm font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-purple-600 disabled:hover:to-purple-800"
-            title={`Tirar ${die.label}`}
-          >
-            {die.label}
-          </button>
-        ))}
-      </div>
-      
-      {/* Separador */}
-      <div className="w-10 h-px bg-gray-600"></div>
-      
-      {/* Botón de dados personalizados */}
-      <button
-        onClick={() => isConnected && onRollDice('2d6+3')}
-        disabled={!isConnected}
-        className="w-12 h-12 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 flex items-center justify-center text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        title="Tirada personalizada: 2d6+3"
+    <div className="w-12 h-full bg-vtt-panel border-r border-vtt-border flex flex-col items-center py-3 justify-between z-20">
+      {/* Logo o Icono de Cabecera */}
+      <div 
+        className="w-8 h-8 flex items-center justify-center border border-vtt-border bg-vtt-surface text-vtt-gold cursor-pointer hover:border-vtt-gold transition-colors" 
+        title="VTT Core"
       >
-        ⚙️
+        <i className="fa-solid fa-dice-d20 text-base"></i>
+      </div>
+
+      {/* Herramientas de Control */}
+      <div className="flex flex-col space-y-2">
+        <button 
+          onClick={() => { playSound(600); onToolChange('select'); }}
+          className={`w-8 h-8 flex items-center justify-center border transition-colors ${
+            selectedTool === 'select'
+              ? 'bg-vtt-active text-vtt-gold border-vtt-border hover:border-vtt-gold'
+              : 'text-zinc-500 hover:text-zinc-200 border-transparent hover:border-vtt-border'
+          }`}
+          title="Puntero"
+        >
+          <i className="fa-solid fa-arrow-pointer"></i>
+        </button>
+        <button 
+          onClick={() => { playSound(600); onToolChange('measure'); }}
+          className={`w-8 h-8 flex items-center justify-center border transition-colors ${
+            selectedTool === 'measure'
+              ? 'bg-vtt-active text-vtt-gold border-vtt-border hover:border-vtt-gold'
+              : 'text-zinc-500 hover:text-zinc-200 border-transparent hover:border-vtt-border'
+          }`}
+          title="Medir Distancia"
+        >
+          <i className="fa-solid fa-ruler"></i>
+        </button>
+        <button 
+          onClick={() => { playSound(600); onToolChange('draw'); }}
+          className={`w-8 h-8 flex items-center justify-center border transition-colors ${
+            selectedTool === 'draw'
+              ? 'bg-vtt-active text-vtt-gold border-vtt-border hover:border-vtt-gold'
+              : 'text-zinc-500 hover:text-zinc-200 border-transparent hover:border-vtt-border'
+          }`}
+          title="Dibujar"
+        >
+          <i className="fa-solid fa-pencil"></i>
+        </button>
+        <button 
+          onClick={() => { playSound(600); onToolChange('fog'); }}
+          className={`w-8 h-8 flex items-center justify-center border transition-colors ${
+            selectedTool === 'fog'
+              ? 'bg-vtt-active text-vtt-gold border-vtt-border hover:border-vtt-gold'
+              : 'text-zinc-500 hover:text-zinc-200 border-transparent hover:border-vtt-border'
+          }`}
+          title="Niebla de Guerra"
+        >
+          <i className="fa-solid fa-eye-slash"></i>
+        </button>
+      </div>
+
+      {/* Configuración */}
+      <button 
+        onClick={() => playSound(500)} 
+        className="w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:border-vtt-border border border-transparent transition-colors" 
+        title="Ajustes"
+      >
+        <i className="fa-solid fa-sliders"></i>
       </button>
     </div>
   );
