@@ -12,6 +12,7 @@ defmodule MyVtt.Application do
       {Phoenix.PubSub, name: MyVtt.PubSub},
       MyVtt.Repo,
       MyVtt.GameState,
+      MyVtt.HealthMonitor,
       MyVttWeb.Endpoint
     ]
 
