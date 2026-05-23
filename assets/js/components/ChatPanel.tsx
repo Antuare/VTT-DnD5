@@ -21,6 +21,15 @@ interface CharacterStats {
   CAR: number | null;
 }
 
+interface BackgroundData {
+  name: string;
+  skills: string[];
+  languages: string[];
+  equipment: string[];
+  feature: string;
+  description: string;
+}
+
 interface ChatPanelProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
@@ -48,7 +57,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   // Efecto de sonido sintetizado básico para clicks e interacciones de la UI
   const playSound = (frequency = 1000, duration = 0.05) => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';

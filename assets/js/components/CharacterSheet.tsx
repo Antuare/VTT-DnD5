@@ -97,7 +97,7 @@ const FEATS: Record<string, { name: string; desc: string; abilityScore?: Partial
 };
 
 // ==================== DATOS DE TRASFONDOS ====================
-const BACKGROUNDS: Record<string, { skills: string[]; languages: string[]; equipment: string[]; feature: string; description: string }> = {
+const BACKGROUNDS: Record<string, { name: string; skills: string[]; languages: string[]; equipment: string[]; feature: string; description: string }> = {
   acolyte: { 
     name: 'Acólito', 
     skills: ['Perspicacia', 'Religión'], 
