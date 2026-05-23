@@ -1,12 +1,12 @@
 defmodule MyVtt.Tables do
   @moduledoc """
-  Contexto para gestión de mesas, tokens y mensajes de chat.
+  Contexto para gestión de mesas, tokens, mensajes de chat y jugadores.
   Proporciona funciones CRUD para persistencia en base de datos.
   """
   
   import Ecto.Query, warn: false
   alias MyVtt.Repo
-  alias MyVtt.Tables.{Table, Token, ChatMessage}
+  alias MyVtt.Tables.{Table, Token, ChatMessage, Player}
 
   # ==================== TABLES ====================
   
@@ -227,5 +227,120 @@ defmodule MyVtt.Tables do
       message: "¡Bienvenido a la mesa! Usa las herramientas para interactuar.",
       is_system: true
     })
+  end
+
+  # ==================== PLAYERS ====================
+  
+  @doc """
+  Lista todos los jugadores de una mesa.
+  """
+  def list_players(table_id) do
+    Player.by_table(table_id)
+  end
+
+  @doc """
+  Obtiene un jugador por ID.
+  """
+  def get_player!(id), do: Repo.get!(Player, id)
+
+  @doc """
+  Obtiene un jugador por ID de usuario y mesa.
+  """
+  def get_player_by_user_and_table(user_id, table_id) do
+    Player.by_user_and_table(user_id, table_id)
+  end
+
+  @doc """
+  Obtiene el GM de una mesa.
+  """
+  def get_gm(table_id) do
+    Player.get_gm(table_id)
+  end
+
+  @doc """
+  Crea un nuevo jugador en una mesa.
+  Si es el primer jugador, automáticamente se le asigna el rol de GM.
+  """
+  def create_player(attrs \\ %{}) do
+    attrs = assign_default_role(attrs)
+    
+    %Player{}
+    |> Player.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Asigna el rol de GM a un jugador existente.
+  Solo puede haber un GM por mesa.
+  """
+  def assign_gm_role(%Player{} = player) do
+    # Remover el rol de GM del GM actual si existe
+    current_gm = get_gm(player.table_id)
+    
+    if current_gm && current_gm.id != player.id do
+      current_gm
+      |> Player.changeset(%{role: "player"})
+      |> Repo.update()
+    end
+    
+    player
+    |> Player.changeset(%{role: "gm"})
+    |> Repo.update()
+  end
+
+  @doc """
+  Actualiza un jugador existente.
+  """
+  def update_player(%Player{} = player, attrs) do
+    player
+    |> Player.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Elimina un jugador de una mesa.
+  """
+  def delete_player(%Player{} = player) do
+    Repo.delete(player)
+  end
+
+  @doc """
+  Verifica si un usuario es el GM de una mesa.
+  """
+  def is_gm?(user_id, table_id) do
+    case get_player_by_user_and_table(user_id, table_id) do
+      nil -> false
+      player -> Player.is_gm?(player)
+    end
+  end
+
+  @doc """
+  Verifica si un jugador puede realizar acciones de GM.
+  """
+  def can_perform_gm_action?(player) do
+    player && Player.is_gm?(player)
+  end
+
+  @doc """
+  Genera un color aleatorio para un jugador.
+  """
+  def generate_random_color do
+    r = :rand.uniform(255) |> Integer.to_string(16) |> String.pad_leading(2, "0")
+    g = :rand.uniform(255) |> Integer.to_string(16) |> String.pad_leading(2, "0")
+    b = :rand.uniform(255) |> Integer.to_string(16) |> String.pad_leading(2, "0")
+    "##{r}#{g}#{b}"
+  end
+
+  # ==================== UTILIDADES PRIVADAS ====================
+  
+  defp assign_default_role(attrs) do
+    # Si no hay otros jugadores en la mesa, este será el GM
+    table_id = attrs[:table_id] || attrs["table_id"]
+    
+    if table_id && get_gm(table_id) == nil do
+      Map.put(attrs, :role, "gm")
+    else
+      Map.put_new(attrs, :role, "player")
+    end
   end
 end
